@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rencana Interaktif KTI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: The application is designed as an interactive dashboard. The core is a visual, horizontal timeline representing the 5 stages of the plan. This structure was chosen because it provides a clear high-level overview of the entire process, which is more intuitive than a linear text document. Users can click any stage on the timeline to instantly view its detailed information (Tujuan, Aktivitas, Output) in a dedicated section below. This master-detail interaction prevents information overload and allows users to explore the plan non-linearly, focusing on the stage most relevant to them. A doughnut chart is included to offer a quick analytical summary of effort distribution, adding value beyond the original report. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info (5-Stage Plan) -> Goal (Organize/Change) -> Viz/Presentation (Interactive clickable timeline) -> Interaction (Click to reveal details) -> Justification (Visualizes process flow, allows non-linear exploration) -> Library/Method (HTML/Tailwind/JS).
+        - Report Info (Stage Details) -> Goal (Inform) -> Viz/Presentation (Dynamically updated content cards) -> Interaction (Content appears on click) -> Justification (Provides details on demand, keeping the main view uncluttered) -> Library/Method (HTML/Tailwind/JS).
+        - Report Info (Process Summary - derived) -> Goal (Compare/Inform) -> Viz/Presentation (Doughnut Chart) -> Interaction (Hover for tooltips) -> Justification (Provides a quick analytical overview of effort distribution across stages) -> Library/Method (Chart.js/Canvas).
+        - Report Info (Activities) -> Goal (Organize) -> Viz/Presentation (Styled checklist) -> Interaction (None) -> Justification (Clearly presents actionable steps for each stage) -> Library/Method (HTML/Tailwind).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #3d405b;
+        }
+        .timeline-item {
+            transition: all 0.3s ease-in-out;
+        }
+        .timeline-item.active {
+            background-color: #3d405b;
+            color: #f2cc8f;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+         @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .marquee-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #3d405b;
+            color: #f8f7f4;
+            overflow: hidden;
+            white-space: nowrap;
+            box-sizing: border-box;
+            padding: 8px 0;
+            z-index: 50;
+        }
+        .marquee-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 20s linear infinite;
+        }
+        @keyframes marquee {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
+</head>
+<body class="antialiased pb-12">
+    <div class="container mx-auto p-4 sm:p-6 md:p-8">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-[#3d405b]">Rencana Interaktif Tindak Lanjut KTI</h1>
+            <p class="text-md md:text-lg text-[#81b29a] mt-2">Dari Bank Ide Menuju Proposal Penelitian</p>
+        </header>
+
+        <main>
+            <section id="intro" class="mb-12 bg-white/60 p-6 rounded-2xl shadow-sm">
+                <h2 class="text-2xl font-semibold mb-4 text-[#3d405b]">Latar Belakang Proyek</h2>
+                <p class="text-gray-600 leading-relaxed">
+                    Aplikasi ini adalah panduan sistematis bagi fasilitator dan murid untuk menindaklanjuti hasil dari workshop "Berburu Ide Penelitian". Tujuannya adalah untuk mengubah kumpulan ide mentah dari "Bank Ide" menjadi sebuah proposal penelitian yang terstruktur, logis, dan dapat dilaksanakan melalui lima tahap yang jelas. Gunakan alur interaktif di bawah ini untuk menjelajahi setiap langkah dalam proses tersebut.
+                </p>
+            </section>
+            
+            <section id="timeline" class="mb-8">
+                 <h2 class="text-2xl font-semibold mb-6 text-center text-[#3d405b]">Alur 5 Tahap Penelitian</h2>
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4 flex-wrap">
+                    <button data-stage="1" class="timeline-item w-full sm:w-auto flex-grow text-center py-4 px-6 bg-white rounded-lg shadow-md cursor-pointer border-2 border-transparent hover:border-[#81b29a]">
+                        <span class="text-sm font-semibold text-gray-400">Tahap 1</span>
+                        <h3 class="font-bold text-lg">Klinik Ide</h3>
+                    </button>
+                    <div class="text-2xl text-[#81b29a] hidden sm:block">→</div>
+                    <button data-stage="2" class="timeline-item w-full sm:w-auto flex-grow text-center py-4 px-6 bg-white rounded-lg shadow-md cursor-pointer border-2 border-transparent hover:border-[#81b29a]">
+                        <span class="text-sm font-semibold text-gray-400">Tahap 2</span>
+                        <h3 class="font-bold text-lg">Rumusan Masalah</h3>
+                    </button>
+                     <div class="text-2xl text-[#81b29a] hidden sm:block">→</div>
+                    <button data-stage="3" class="timeline-item w-full sm:w-auto flex-grow text-center py-4 px-6 bg-white rounded-lg shadow-md cursor-pointer border-2 border-transparent hover:border-[#81b29a]">
+                        <span class="text-sm font-semibold text-gray-400">Tahap 3</span>
+                        <h3 class="font-bold text-lg">Metode Penelitian</h3>
+                    </button>
+                     <div class="text-2xl text-[#81b29a] hidden sm:block">→</div>
+                    <button data-stage="4" class="timeline-item w-full sm:w-auto flex-grow text-center py-4 px-6 bg-white rounded-lg shadow-md cursor-pointer border-2 border-transparent hover:border-[#81b29a]">
+                        <span class="text-sm font-semibold text-gray-400">Tahap 4</span>
+                        <h3 class="font-bold text-lg">Penyusunan Proposal</h3>
+                    </button>
+                     <div class="text-2xl text-[#81b29a] hidden sm:block">→</div>
+                    <button data-stage="5" class="timeline-item w-full sm:w-auto flex-grow text-center py-4 px-6 bg-white rounded-lg shadow-md cursor-pointer border-2 border-transparent hover:border-[#81b29a]">
+                        <span class="text-sm font-semibold text-gray-400">Tahap 5</span>
+                        <h3 class="font-bold text-lg">Presentasi & Finalisasi</h3>
+                    </button>
+                </div>
+            </section>
+
+            <section id="details" class="min-h-[400px] bg-white p-6 md:p-8 rounded-2xl shadow-lg transition-opacity duration-500 ease-in-out"></section>
+
+            <section id="visualization" class="mt-12">
+                <h2 class="text-2xl font-semibold mb-6 text-center text-[#3d405b]">Distribusi Upaya Proyek (Estimasi)</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">
+                    Visualisasi ini memberikan gambaran estimasi alokasi waktu dan tenaga untuk setiap tahap. Tahap penyusunan proposal dan presentasi merupakan bagian yang paling intensif. Gunakan ini sebagai panduan untuk merencanakan waktu Anda secara efektif.
+                </p>
+                <div class="chart-container">
+                    <canvas id="effortChart"></canvas>
+                </div>
+            </section>
+
+        </main>
+        
+        <!-- Footer lama dihapus dan diganti dengan running text di bawah -->
+    </div>
+    
+    <div class="marquee-container">
+        <span class="marquee-text">
+            ©2025. SMP YPS SINGKOLE. Rencana Tindak Lanjut KTI. Dikembangkan oleh Pak Ammank.
+        </span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const stageData = {
+                '1': {
+                    title: 'Tahap 1: Klinik Ide & Finalisasi Topik Kelompok',
+                    tujuan: 'Setiap kelompok memilih dan memfinalisasi <strong>satu</strong> topik penelitian yang paling diminati dan paling mungkin untuk dilaksanakan dari tiga opsi yang telah mereka diskusikan.',
+                    peran: 'Bertindak sebagai konsultan yang menantang dan mengarahkan pemikiran kritis kelompok.',
+                    aktivitas: [
+                        'Diskusikan 3 topik pilihan berdasarkan 4 kriteria: Minat, Keterlaksanaan (Feasibility), Relevansi, dan Keunikan.',
+                        'Ikuti Sesi Konsultasi "Klinik" dengan fasilitator untuk mempertajam fokus ide.',
+                        'Ajukan pertanyaan pancingan untuk menguji ide, misal: "Untuk topik sampah, jenis sampah apa yang spesifik ingin kalian teliti?"'
+                    ],
+                    output: 'Setiap kelompok memiliki <strong>satu judul topik penelitian</strong> yang telah disetujui oleh fasilitator.'
+                },
+                '2': {
+                    title: 'Tahap 2: Merumuskan Masalah dan Tujuan Penelitian',
+                    tujuan: 'Membantu murid mengubah topik yang masih umum menjadi rumusan masalah yang spesifik (dalam bentuk kalimat tanya) dan tujuan penelitian yang jelas.',
+                    peran: 'Menjadi instruktur yang memberikan kerangka berpikir logis.',
+                    aktivitas: [
+                        'Ikuti Mini-Lesson (15 menit) untuk memahami perbedaan antara Topik, Rumusan Masalah, dan Tujuan Penelitian.',
+                        'Berlatih menyusun 1-2 rumusan masalah dengan kata tanya (Apa, Mengapa, Bagaimana).',
+                        'Merumuskan tujuan yang selaras dengan setiap rumusan masalah yang dibuat.'
+                    ],
+                    output: 'Dokumen singkat berisi: <strong>Judul Final, Rumusan Masalah, dan Tujuan Penelitian</strong>.'
+                },
+                '3': {
+                    title: 'Tahap 3: Penentuan Metode Pengumpulan Data Sederhana',
+                    tujuan: 'Memperkenalkan murid pada metode dasar pengumpulan data dan membantu mereka memilih metode yang paling sesuai untuk menjawab rumusan masalah mereka.',
+                    peran: 'Menjadi pemandu metodologi yang menyederhanakan konsep-konsep penelitian.',
+                    aktivitas: [
+                        'Pelajari 3 metode sederhana: Angket (Kuesioner), Wawancara, dan Observasi (Pengamatan).',
+                        'Diskusikan dan cocokkan metode yang paling logis untuk menjawab rumusan masalah kelompok.',
+                        'Tentukan siapa target responden atau narasumber untuk penelitian.'
+                    ],
+                    output: 'Keputusan atas <strong>1-2 metode pengumpulan data</strong> yang akan digunakan beserta justifikasi singkatnya.'
+                },
+                '4': {
+                    title: 'Tahap 4: Penyusunan Kerangka Proposal Penelitian',
+                    tujuan: 'Membimbing murid untuk menyatukan semua elemen yang telah disusun ke dalam format proposal penelitian yang ringkas dan sistematis.',
+                    peran: 'Menjadi editor dan pembimbing penulisan.',
+                    aktivitas: [
+                        'Gunakan templat proposal yang disediakan fasilitator (Judul, Latar Belakang, Rumusan Masalah, Tujuan, Metode).',
+                        'Ikuti sesi menulis terbimbing untuk mengisi setiap bagian proposal dengan benar.',
+                        'Pastikan semua elemen yang telah didiskusikan sebelumnya tercantum dalam proposal.'
+                    ],
+                    output: '<strong>Draf proposal penelitian KTI</strong> dari setiap kelompok.'
+                },
+                '5': {
+                    title: 'Tahap 5: Presentasi Proposal dan Persetujuan Final',
+                    tujuan: 'Memberikan kelompok kesempatan untuk memvalidasi rencana penelitian mereka, serta mendapatkan persetujuan resmi untuk memulai penelitian.',
+                    peran: 'Menjadi panelis dan pemberi persetujuan akhir.',
+                    aktivitas: [
+                        'Siapkan dan lakukan presentasi proposal selama 5-7 menit di depan kelas.',
+                        'Terima dan diskusikan umpan balik dari fasilitator dan kelompok lain.',
+                        'Lakukan revisi jika diperlukan untuk mendapatkan persetujuan final ("lampu hijau").'
+                    ],
+                    output: '<strong>Proposal final yang telah disetujui</strong>, menandai dimulainya tahap pelaksanaan Karya Tulis Ilmiah.'
+                }
+            };
+
+            const timelineButtons = document.querySelectorAll('.timeline-item');
+            const detailsContainer = document.getElementById('details');
+            let currentStage = '1';
+
+            function renderStageDetails(stageId) {
+                const data = stageData[stageId];
+                if (!data) return;
+
+                detailsContainer.style.opacity = 0;
+                
+                setTimeout(() => {
+                    detailsContainer.innerHTML = `
+                        <h2 class="text-2xl font-bold mb-4 text-[#3d405b]">${data.title}</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="font-semibold text-lg mb-2 text-[#e07a5f]">🎯 Tujuan Tahap Ini</h3>
+                                <p class="text-gray-600">${data.tujuan}</p>
+                                <h3 class="font-semibold text-lg mt-4 mb-2 text-[#e07a5f]">🧑‍🏫 Peran Fasilitator</h3>
+                                <p class="text-gray-600">${data.peran}</p>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-2 text-[#e07a5f]">📋 Aktivitas Utama</h3>
+                                <ul class="space-y-2">
+                                    ${data.aktivitas.map(activity => `
+                                        <li class="flex items-start">
+                                            <span class="text-[#81b29a] mr-3 mt-1">✓</span>
+                                            <span class="text-gray-700">${activity}</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-6 bg-[#f2cc8f]/30 p-4 rounded-lg border-l-4 border-[#f2cc8f]">
+                            <h3 class="font-semibold text-lg mb-1 text-[#3d405b]">📦 Output Kunci</h3>
+                            <p class="text-gray-800">${data.output}</p>
+                        </div>
+                    `;
+                    detailsContainer.style.opacity = 1;
+                }, 200);
+
+                timelineButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.stage === stageId);
+                });
+            }
+
+            timelineButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    currentStage = button.dataset.stage;
+                    renderStageDetails(currentStage);
+                });
+            });
+
+            renderStageDetails(currentStage);
+
+            const ctx = document.getElementById('effortChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Tahap 1: Klinik Ide', 'Tahap 2: Rumusan', 'Tahap 3: Metode', 'Tahap 4: Proposal', 'Tahap 5: Presentasi'],
+                    datasets: [{
+                        label: 'Estimasi Upaya',
+                        data: [15, 15, 15, 30, 25],
+                        backgroundColor: [
+                            '#f2cc8f',
+                            '#e07a5f',
+                            '#81b29a',
+                            '#3d405b',
+                            '#9c9c9c'
+                        ],
+                        borderColor: '#f8f7f4',
+                        borderWidth: 4,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    family: "'Inter', sans-serif"
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
